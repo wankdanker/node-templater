@@ -16,6 +16,21 @@ current template engines
 * ejs
 * jade
 
+install
+---------
+
+with npm...
+
+```bash
+npm install templater
+```
+
+or with git...
+
+```bash
+git clone git://github.com/wankdanker/node-templater.git
+```
+
 api
 ----
 
