@@ -49,8 +49,6 @@ Templater.prototype.render = function (str, options, callback) {
     readFile(filename, 'utf8', function (err, data) {
       if (err) return callback(err);
       
-      self.render(data, options, callback);
-      
       //watch the file for changes
       watchFile(filename, function (curr, prev) {
         if (curr.mtime !== prev.mtime) {
@@ -62,6 +60,8 @@ Templater.prototype.render = function (str, options, callback) {
       });
       
       self.watched[filename] = true;
+
+      self.render(data, options, callback);
     });
     
     return;
