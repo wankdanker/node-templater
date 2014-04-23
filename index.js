@@ -12,6 +12,10 @@ Templater.Engines = ["ejs", "jade"];
 function Templater(options) {
   var self = this;
   
+  if (this.constructor.name != 'Templater') {
+    return new Templater(options);
+  }
+
   self.engines = {};
   self.cache = {};
   self.watched = {};
