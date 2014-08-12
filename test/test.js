@@ -17,6 +17,16 @@ t.render(" #{name}", { engine : "jade", context : context }, function (err, data
   finish();
 });
 
+t.render("{{name}}", { engine : "handlebars", context : context }, function (err, data) {
+  assert.equal(data, "Steve Dave", "handlebars string literal test failed");
+  finish();
+});
+
+t.render("{name}", { engine : "dustjs-linkedin", context : context }, function (err, data) {
+  assert.equal(data, "Steve Dave", "dust string literal test failed");
+  finish();
+});
+
 t.render({ filename : __dirname + "/test.ejs", context : context }, function (err, data) {
   assert.equal(data, "Steve Dave", "ejs file test failed");
   finish();
@@ -24,6 +34,16 @@ t.render({ filename : __dirname + "/test.ejs", context : context }, function (er
 
 t.render({ filename : __dirname + "/test.jade", context : context }, function (err, data) {
   assert.equal(data, "Steve Dave", "jade file test failed");
+  finish();
+});
+
+t.render({ filename : __dirname + "/test.handlebars", context : context }, function (err, data) {
+  assert.equal(data, "Steve Dave\n", "handlebars file test failed");
+  finish();
+});
+
+t.render({ filename : __dirname + "/test.dustjs-linkedin", context : context }, function (err, data) {
+  assert.equal(data, "Steve Dave", "dust file test failed");
   finish();
 });
 
