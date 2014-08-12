@@ -49,17 +49,20 @@ Templater.prototype.render = function (str, options, callback) {
     readFile(filename, 'utf8', function (err, data) {
       if (err) return callback(err);
       
-      //watch the file for changes
-      watchFile(filename, function (curr, prev) {
-        if (curr.mtime !== prev.mtime) {
-          delete self.cache[filename];
-          delete self.watched[filename];
-          
-          unwatchFile(filename);
-        }
-      });
-      
-      self.watched[filename] = true;
+      //check to see if we are already watching this file
+      if (!self.watched[filename]) {
+        //watch the file for changes
+        watchFile(filename, function (curr, prev) {
+          if (curr.mtime !== prev.mtime) {
+            delete self.cache[filename];
+            delete self.watched[filename];
+
+            unwatchFile(filename);
+          }
+        });
+
+        self.watched[filename] = true;
+      }
 
       self.render(data, options, callback);
     });
