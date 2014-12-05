@@ -7,7 +7,7 @@ var readFile = require('fs').readFile
 
 module.exports = Templater;
 
-Templater.Engines = ["ejs", "jade", "handlebars", "dustjs-linkedin"];
+Templater.Engines = ["ejs", "jade", "handlebars", "dustjs-linkedin", "trimpath-template"];
 
 function Templater(options) {
   var self = this;
