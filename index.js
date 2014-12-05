@@ -16,6 +16,9 @@ function Templater(options) {
     return new Templater(options);
   }
 
+  options = options || {};
+
+  self.engineExtensions = options.engineExtensions || {};
   self.engines = {};
   self.cache = {};
   self.watched = {};
@@ -30,6 +33,7 @@ Templater.prototype.render = function (str, options, callback) {
     , engine
     , filename
     , fn
+    , fileExtension
     ;
   
   if (arguments.length === 2 && typeof str === 'object' && typeof options === 'function') {
@@ -44,8 +48,9 @@ Templater.prototype.render = function (str, options, callback) {
   filename = options.filename;
   
   if (!str && filename) {
-    options.engine = options.engine || extname(filename).split('.')[1];
-    
+    fileExtension = extname(filename).split('.')[1];
+    options.engine = options.engine || self.engineExtensions[fileExtension] || fileExtension;
+
     readFile(filename, 'utf8', function (err, data) {
       if (err) return callback(err);
       
