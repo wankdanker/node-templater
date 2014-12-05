@@ -18,7 +18,7 @@ function Templater(options) {
 
   options = options || {};
 
-  self.engineExtensions = options.engineExtensions || {};
+  self.engineExtensions = options.engineExtensions || module.exports.engineExtensions || {};
   self.engines = {};
   self.cache = {};
   self.watched = {};
