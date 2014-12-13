@@ -75,13 +75,13 @@ Templater.prototype.render = function (str, options, callback) {
     return;
   }
   else if (!str) {
-    return callback ( { message : "Templater.render() : template string not found." });
+    return callback (new Error("Templater.render() : template string not found."));
   }
   
   engine = self.engines[options.engine];
   
   if (!engine) {
-    return callback ( { message : "Templater.render() : engine not found: " + engine });
+    return callback (new Error("Templater.render() : engine not found: " + engine ));
   }
   
   if (filename) {
@@ -89,13 +89,23 @@ Templater.prototype.render = function (str, options, callback) {
       self.cache[filename] = engine.compile(str, options);
     }
     
-    return callback(null, self.cache[filename](options.context));
+    try {
+      return callback(null, self.cache[filename](options.context));
+    }
+    catch (e) {
+      return callback(e);
+    }
   }
   else {
     process.nextTick(function () {
       fn = engine.compile(str, options);
       
-      return callback(null, fn(options.context));
+      try {
+      	return callback(null, fn(options.context));
+      }
+      catch (e) {
+        return callback(e);
+      }
     });
   }
 };
