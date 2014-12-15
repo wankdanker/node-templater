@@ -18,11 +18,17 @@ function Templater(options) {
 
   options = options || {};
 
+  self.options = options;
   self.engineExtensions = options.engineExtensions || module.exports.engineExtensions || {};
   self.engines = {};
   self.cache = {};
   self.watched = {};
-  
+ 
+  //default use caching if cache is not explicitly false
+  if (self.options.cache !== false) {
+    self.options.cache = true;
+  }
+
   Templater.Engines.forEach(function (engine) {
     self.engines.__defineGetter__(engine, require.bind(require, engine));
   });
@@ -55,7 +61,7 @@ Templater.prototype.render = function (str, options, callback) {
       if (err) return callback(err);
       
       //check to see if we are already watching this file
-      if (!self.watched[filename]) {
+      if (!self.watched[filename] && self.options.cache) {
         //watch the file for changes
         watchFile(filename, function (curr, prev) {
           if (curr.mtime !== prev.mtime) {
@@ -84,7 +90,7 @@ Templater.prototype.render = function (str, options, callback) {
     return callback (new Error("Templater.render() : engine not found: " + engine ));
   }
   
-  if (filename) {
+  if (filename && self.options.cache) {
     if (!self.cache[filename]) {
       self.cache[filename] = engine.compile(str, options);
     }
