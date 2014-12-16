@@ -124,12 +124,12 @@ Templater.prototype.render = function (str, options, callback) {
 Templater.prototype.resolveFile = function (path, cb) {
   var self = this;
 
-  self.resolveFileByDirectoryIndex(path, function (err, foundPath) {
+  self.resolveFileByExtension(path, function (err, foundPath) {
     if (foundPath) {
       return cb(null, foundPath);
     }
 
-    self.resolveFileByExtension(path, function (err, foundPath) {
+    self.resolveFileByDirectoryIndex(path, function (err, foundPath) {
       if (foundPath) {
         return cb(null, foundPath);
       }
@@ -142,10 +142,20 @@ Templater.prototype.resolveFile = function (path, cb) {
 };
 
 Templater.prototype.resolveFileByExtension = function (path, cb) {
-  var self = this;
+  var self = this, ext;
 
   if (!self.options.alternateExtensions) {
     return cb(null, null);
+  }
+
+  if (self.options.allowedAlternateExtensions) {
+    ext = extname(path);
+
+    if (!~self.options.allowedAlternateExtensions.indexOf(ext)
+      && !~self.options.allowedAlternateExtensions.indexOf(ext.split('.')[1])
+    ) {
+      return cb(null, null);
+    }
   }
 
   return tryFileExtensions(path, self.options.alternateExtensions, cb);
