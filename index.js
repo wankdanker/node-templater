@@ -108,16 +108,14 @@ Templater.prototype.render = function (str, options, callback) {
     }
   }
   else {
-    process.nextTick(function () {
-      fn = engine.compile(str, options);
-      
-      try {
-      	return callback(null, fn(options.context));
-      }
-      catch (e) {
-        return callback(e);
-      }
-    });
+    fn = engine.compile(str, options);
+    
+    try {
+      return callback(null, fn(options.context));
+    }
+    catch (e) {
+      return callback(e);
+    }
   }
 };
 
