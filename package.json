@@ -10,7 +10,10 @@
   "scripts": {
     "test": "node test/test.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "find-alternate-file": "^1.0.2",
+    "find-alternate-index": "^1.0.0"
+  },
   "devDependencies": {
     "dustjs-linkedin": "^2.4.0",
     "ejs": "^1.0.0",

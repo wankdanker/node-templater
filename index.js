@@ -3,6 +3,8 @@ var readFile = require('fs').readFile
   , unwatchFile = require('fs').unwatchFile
   , extname = require('path').extname
   , basename = require('path').basename
+  , tryFileExtensions = require('find-alternate-file')
+  , tryDirectoryIndex = require('find-alternate-index')
   ;
 
 module.exports = Templater;
@@ -54,25 +56,28 @@ Templater.prototype.render = function (str, options, callback) {
   filename = options.filename;
   
   if (!str && filename) {
-    fileExtension = extname(filename).split('.')[1];
-    options.engine = options.engine || self.engineExtensions[fileExtension] || fileExtension;
-
-    readFile(filename, 'utf8', function (err, data) {
+    self.loadFile(filename, function (err, data, resolvedPath) {
       if (err) return callback(err);
       
-      //check to see if we are already watching this file
-      if (!self.watched[filename] && self.options.cache) {
-        //watch the file for changes
-        watchFile(filename, function (curr, prev) {
-          if (curr.mtime !== prev.mtime) {
-            delete self.cache[filename];
-            delete self.watched[filename];
+      //over-write the filename to the resolved filename/path
+      options.filename = resolvedPath;
+      
+      fileExtension = extname(resolvedPath).split('.')[1];
+      options.engine = options.engine || self.engineExtensions[fileExtension] || fileExtension;
 
-            unwatchFile(filename);
+      //check to see if we are already watching this file
+      if (!self.watched[resolvedPath] && self.options.cache) {
+        //watch the file for changes
+        watchFile(resolvedPath, function (curr, prev) {
+          if (curr.mtime !== prev.mtime) {
+            delete self.cache[resolvedPath];
+            delete self.watched[resolvedPath];
+
+            unwatchFile(resolvedPath);
           }
         });
 
-        self.watched[filename] = true;
+        self.watched[resolvedPath] = true;
       }
 
       self.render(data, options, callback);
@@ -114,6 +119,56 @@ Templater.prototype.render = function (str, options, callback) {
       }
     });
   }
+};
+
+Templater.prototype.resolveFile = function (path, cb) {
+  var self = this;
+
+  self.resolveFileByDirectoryIndex(path, function (err, foundPath) {
+    if (foundPath) {
+      return cb(null, foundPath);
+    }
+
+    self.resolveFileByExtension(path, function (err, foundPath) {
+      if (foundPath) {
+        return cb(null, foundPath);
+      }
+
+      //return the original path anyway and let the path fail
+      //if it doesn't exist
+      return cb(null, path);
+    });
+  });
+};
+
+Templater.prototype.resolveFileByExtension = function (path, cb) {
+  var self = this;
+
+  if (!self.options.alternateExtensions) {
+    return cb(null, null);
+  }
+
+  return tryFileExtensions(path, self.options.alternateExtensions, cb);
+};
+
+Templater.prototype.resolveFileByDirectoryIndex = function (path, cb) {
+  var self = this;
+
+  if (!self.options.alternateIndexes) {
+    return cb(null, null);
+  }
+
+  return tryDirectoryIndex(path, self.options.alternateIndexes, cb);
+};
+
+Templater.prototype.loadFile = function (path, cb) {
+  var self = this;
+
+  self.resolveFile(path, function (err, resolvedPath) {
+    readFile(resolvedPath, 'utf8', function (err, data) {
+      cb(err, data, resolvedPath);
+    });
+  });
 };
 
 Templater.prototype.end = function () {

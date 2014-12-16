@@ -1,8 +1,8 @@
 var Templater = require("../")
-  , t = new Templater({ engineExtensions : { html : 'trimpath-template' } })
+  , t = new Templater({ engineExtensions : { html : 'trimpath-template' }, alternateExtensions : ['.jade', '.ejs'], alternateIndexes : ['home.html', 'index.ejs'] })
   , assert = require("assert")
   , complete = 0
-  , required = 9
+  , required = 11
   , context = {
     name : "Steve Dave"
   };
@@ -59,6 +59,16 @@ t.render({ filename : __dirname + "/test.trimpath-template", context : context }
 
 t.render({ filename : __dirname + "/test.html", context : context }, function (err, data) {
   assert.equal(data, "Steve Dave", "trimpath-template via engineExtensions file test failed");
+  finish();
+});
+
+t.render({ filename : __dirname + "/test.asdf", context : context }, function (err, data) {
+  assert.equal(data, "Steve Dave", "Didn't resolve alternate file extension");
+  finish();
+});
+
+t.render({ filename : __dirname + "/root/", context : context }, function (err, data) {
+  assert.equal(data, "Steve Dave", "Didn't resolve alternate index file");
   finish();
 });
 
