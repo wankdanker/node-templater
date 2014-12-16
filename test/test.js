@@ -1,8 +1,13 @@
 var Templater = require("../")
-  , t = new Templater({ engineExtensions : { html : 'trimpath-template' }, alternateExtensions : ['.jade', '.ejs'], alternateIndexes : ['home.html', 'index.ejs'] })
+  , t = new Templater({ 
+    engineExtensions : { html : 'trimpath-template' }
+    , allowedAlternateExtensions : ['.html', '.asdf' ]
+    , alternateExtensions : ['.jade', '.ejs']
+    , alternateIndexes : ['home.html', 'home.ejs'] 
+  })
   , assert = require("assert")
   , complete = 0
-  , required = 11
+  , required = 12
   , context = {
     name : "Steve Dave"
   };
@@ -68,7 +73,17 @@ t.render({ filename : __dirname + "/test.asdf", context : context }, function (e
 });
 
 t.render({ filename : __dirname + "/root/", context : context }, function (err, data) {
-  assert.equal(data, "Steve Dave", "Didn't resolve alternate index file");
+  assert.equal(data, "Steve Dave\n", "Didn't resolve alternate index file");
+  finish();
+});
+
+t.render({ filename : __dirname + "/root/home.html", context : context }, function (err, data) {
+  assert.equal(data, "Steve Dave\n", "Failed to resolve alternate extension on allowed extension");
+  finish();
+});
+
+t.render({ filename : __dirname + "/root/home.spaceship", context : context }, function (err, data) {
+  assert.ok(err, "Failed to properly NOT resolve alternate extension on non-allowed extension");
   finish();
 });
 
