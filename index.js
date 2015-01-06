@@ -5,11 +5,19 @@ var readFile = require('fs').readFile
   , basename = require('path').basename
   , tryFileExtensions = require('find-alternate-file')
   , tryDirectoryIndex = require('find-alternate-index')
+  , templaters = [];
   ;
 
 module.exports = Templater;
 
 Templater.Engines = ["ejs", "jade", "handlebars", "dustjs-linkedin", "trimpath-template"];
+
+//Export a function that will end all templater instances
+Templater.end = function () {
+  templaters.forEach(function (t) {
+    t.end();
+  });
+};
 
 function Templater(options) {
   var self = this;
@@ -17,6 +25,8 @@ function Templater(options) {
   if (this.constructor.name != 'Templater') {
     return new Templater(options);
   }
+
+  templaters.push(self);
 
   options = options || {};
 
@@ -185,4 +195,6 @@ Templater.prototype.end = function () {
   Object.keys(self.watched).forEach(function (filename) {
     unwatchFile(filename);
   });
+
+  templaters.splice(templaters.indexOf(self),1);
 };
