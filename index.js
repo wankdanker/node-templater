@@ -198,3 +198,9 @@ Templater.prototype.end = function () {
 
   templaters.splice(templaters.indexOf(self),1);
 };
+
+Templater.prototype.clearCache = function () {
+  var self = this;
+
+  self.cache = {};
+};
