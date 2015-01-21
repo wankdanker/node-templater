@@ -107,7 +107,12 @@ Templater.prototype.render = function (str, options, callback) {
   
   if (filename && self.options.cache) {
     if (!self.cache[filename]) {
-      self.cache[filename] = engine.compile(str, options);
+      try {
+        self.cache[filename] = engine.compile(str, options);
+      }
+      catch (e) {
+        return callback(e);
+      }
     }
     
     try {
@@ -118,7 +123,12 @@ Templater.prototype.render = function (str, options, callback) {
     }
   }
   else {
-    fn = engine.compile(str, options);
+    try {
+      fn = engine.compile(str, options);
+    }
+    catch (e) {
+      return callback(e);
+    }
     
     try {
       return callback(null, fn(options.context));
