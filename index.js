@@ -21,7 +21,7 @@ Templater.end = function () {
 
 function Templater(options) {
   var self = this;
-  
+
   if (this.constructor.name != 'Templater') {
     return new Templater(options);
   }
@@ -35,10 +35,15 @@ function Templater(options) {
   self.engines = {};
   self.cache = {};
   self.watched = {};
- 
+
   //default use caching if cache is not explicitly false
   if (self.options.cache !== false) {
     self.options.cache = true;
+  }
+
+  //default to not watching if watch is not explicitly true
+  if (self.options.watch !== true) {
+    self.options.watch = false;
   }
 
   Templater.Engines.forEach(function (engine) {
@@ -53,7 +58,7 @@ Templater.prototype.render = function (str, options, callback) {
     , fn
     , fileExtension
     ;
-  
+
   if (arguments.length === 2 && typeof str === 'object' && typeof options === 'function') {
     /*Templater.render(options, callback)*/
     callback = options;
@@ -62,21 +67,21 @@ Templater.prototype.render = function (str, options, callback) {
   } else if (arguments.length !== 3) {
     throw Error("Wrong number of arguments passed to Templater.render([str,] options, callback)");
   }
-  
+
   filename = options.filename;
-  
+
   if (!str && filename) {
     self.loadFile(filename, function (err, data, resolvedPath) {
       if (err) return callback(err);
-      
+
       //over-write the filename to the resolved filename/path
       options.filename = resolvedPath;
-      
+
       fileExtension = extname(resolvedPath).split('.')[1];
       options.engine = options.engine || self.engineExtensions[fileExtension] || fileExtension;
 
       //check to see if we are already watching this file
-      if (!self.watched[resolvedPath] && self.options.cache) {
+      if (self.options.watch && !self.watched[resolvedPath] && self.options.cache) {
         //watch the file for changes
         watchFile(resolvedPath, function (curr, prev) {
           if (curr.mtime !== prev.mtime) {
@@ -92,19 +97,19 @@ Templater.prototype.render = function (str, options, callback) {
 
       self.render(data, options, callback);
     });
-    
+
     return;
   }
   else if (!str) {
     return callback (new Error("Templater.render() : template string not found."));
   }
-  
+
   engine = self.engines[options.engine];
-  
+
   if (!engine) {
     return callback (new Error("Templater.render() : engine not found: " + engine ));
   }
-  
+
   if (filename && self.options.cache) {
     if (!self.cache[filename]) {
       try {
@@ -114,7 +119,7 @@ Templater.prototype.render = function (str, options, callback) {
         return callback(e);
       }
     }
-    
+
     try {
       return callback(null, self.cache[filename](options.context));
     }
@@ -129,7 +134,7 @@ Templater.prototype.render = function (str, options, callback) {
     catch (e) {
       return callback(e);
     }
-    
+
     try {
       return callback(null, fn(options.context));
     }
@@ -201,7 +206,7 @@ Templater.prototype.loadFile = function (path, cb) {
 
 Templater.prototype.end = function () {
   var self = this;
-  
+
   Object.keys(self.watched).forEach(function (filename) {
     unwatchFile(filename);
   });
