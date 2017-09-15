@@ -46,8 +46,15 @@ function Templater(options) {
     self.options.watch = false;
   }
 
+  //register the engines to be lazy loaded. This handles 'engine-name:engine-require-name'
+  // where engine-name is what gets registered in the engines hash, and engine-require-name
+  // is what gets required()ed
   Templater.Engines.forEach(function (engine) {
-    self.engines.__defineGetter__(engine, require.bind(require, engine));
+    var e = engine.split(':');
+    engine = e.shift();
+    var req = e.join(':') || engine
+
+    self.engines.__defineGetter__(engine, require.bind(require, req));
   });
 }
 
